@@ -3,11 +3,10 @@ FROM python:3.6
 WORKDIR /server
 
 COPY requirements.txt /server
-# COPY templates/* /server/templates/
+COPY templates/* /server/templates/
 COPY server.py /server
 COPY resources.py /server
 COPY models.py /server
-COPY templates/* /server/templates/
 COPY init_functions.py /server
 COPY wait-for-it.sh /server
 RUN chmod +x wait-for-it.sh

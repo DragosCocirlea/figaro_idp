@@ -22,15 +22,6 @@ class UserModel(db.Model):
     def find_by_email(cls, email):
         return cls.query.filter_by(email = email).first()
 
-    @classmethod
-    def return_all(cls):
-        def to_json(x):
-            return {
-                'email': x.email,
-                'password': x.password
-            }
-        return {'users': list(map(lambda x: to_json(x), UserModel.query.all()))}
-
     @staticmethod
     def generate_hash(password):
         return sha256.hash(password)

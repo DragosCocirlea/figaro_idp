@@ -1,4 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy import func
+import math
 
 db = SQLAlchemy()
 
@@ -6,7 +9,7 @@ class UserModel(db.Model):
     __tablename__ = 'Users'
     id = db.Column('id', db.String(50), primary_key = True)
     name = db.Column('name', db.String(50))
-    phone = db.Column('phone', db.String(10))
+    phone = db.Column('phone', db.String(12))
     rating = db.Column('rating', db.Float)
     ratings_recv = db.Column('ratings_recv', db.Integer)
 
@@ -53,8 +56,8 @@ class BarbershopModel(db.Model):
     def __init__(self, json_bbs):
         self.name = json_bbs['name']
         self.address = json_bbs['address']
-        self.rating = 0
-        self.ratings_recv = 0
+        self.rating = json_bbs['rating']
+        self.ratings_recv = json_bbs['ratings_recv']
         self.coordX = json_bbs['coordX']
         self.coordY = json_bbs['coordY']
 
@@ -66,9 +69,8 @@ class BarbershopModel(db.Model):
         db.session.delete(self)
         db.session.commit()
 
-
     def to_json(self):
-        json = {
+        return {
             'id' : self.id,
             'name' : self.name,
             'address' : self.address,
@@ -76,7 +78,7 @@ class BarbershopModel(db.Model):
             'coordX' : self.coordX,
             'coordY' : self.coordY
         }
-        return json
+
 
 class BarberModel(db.Model):
     __tablename__ = 'Barbers'
@@ -88,8 +90,8 @@ class BarberModel(db.Model):
 
     def __init__(self, json_barber):
         self.name = json_barber['name']
-        self.rating = 0
-        self.ratings_recv = 0
+        self.rating = json_barber['rating']
+        self.ratings_recv = json_barber['ratings_recv']
         self.bbs_id = json_barber['bbs_id']
 
     def save_to_db(self):
@@ -97,13 +99,12 @@ class BarberModel(db.Model):
         db.session.commit()
 
     def to_json(self):
-        json = {
+        return {
                 'id' : self.id,
                 'name' : self.name,
                 'rating' : self.rating,
                 'bbs_id' : self.bbs_id
         }
-        return json
            
 
 class ServiceModel(db.Model):
@@ -127,7 +128,7 @@ class ServiceModel(db.Model):
         db.session.commit()
 
     def to_json(self):
-        json = {
+        return {
                 'id' : self.id,
                 'name' : self.name,
                 'price' : self.price,
@@ -160,7 +161,7 @@ class AppointmentModel(db.Model):
         db.session.commit()
 
     def to_json(self):
-        json = {
+        return {
                 'id' : self.id,
                 'date' : self.date,
                 'time' : self.time,
@@ -168,4 +169,3 @@ class AppointmentModel(db.Model):
                 'client_id' : self.client_id,
                 'service_id' : self.service_id
         }
-        return json

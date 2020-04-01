@@ -22,20 +22,9 @@ db.app = app
 db.init_app(app)
 db.create_all()
 
-
 # add initial data if it's not already there
 if BarbershopModel.query.count() == 0:
     init_functions.init_db_data()
-else:
-    bbss = BarbershopModel.query.all()
-    for bbs in bbss:
-        print('{} - {}'.format(bbs.id, bbs.name))
-    bs = BarberModel.query.all()
-    for b in bs:
-        print('{} - {}'.format(b.id, b.name))
-    ss = ServiceModel.query.all()
-    for s in ss:
-        print('{} - {}'.format(s.id, s.name))
 
 import resources
 api.add_resource(resources.UserData, '/user')
@@ -62,7 +51,7 @@ def show_barbers():
 
 @app.route('/inspect/users')
 def show_users():
-    columns = ['id', 'name', 'phone', 'rating']
+    columns = ['email', 'name', 'phone', 'rating']
     users = []
     for user in UserModel.query.all():
         users.append([user.id, user.name, user.phone, str(user.rating)])
@@ -70,7 +59,7 @@ def show_users():
 
 @app.route('/inspect/services')
 def show_services():
-    columns = ['email', 'name', 'price', 'bbs_id']
+    columns = ['id', 'name', 'price', 'bbs_id']
     services = []
     for serv in ServiceModel.query.all():
         services.append([serv.id, serv.name, str(serv.price), serv.bbs_id])
@@ -86,12 +75,3 @@ def show_appointments():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
-
-# ############################################################# ADMIN FUNCTIONS #############################################################
-# @app.route('/admin/add_barbershop', methods=['POST'])
-# def add_barbershop():
-#     print(request.get_json())
-#     bbs = Barbershop(json.loads(request.get_json()))
-#     db.session.add(bbs)
-#     db.session.commit()
-#     return json.dumps({'Response':'Successfully added\n'})

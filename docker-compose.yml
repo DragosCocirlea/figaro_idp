@@ -33,9 +33,3 @@ services:
     depends_on:
       - dbauth
       - server
-
-# networks:
-#   reachable:
-#   unreachable:
-#     driver: overlay
-#     internal: true
