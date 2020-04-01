@@ -1,14 +1,17 @@
 FROM python:3.6
 
-EXPOSE 5000
-
 WORKDIR /server
 
 COPY requirements.txt /server
-COPY templates/* /server/templates/
+# COPY templates/* /server/templates/
 COPY server.py /server
+COPY resources.py /server
 COPY models.py /server
+COPY templates/* /server/templates/
+COPY init_functions.py /server
+COPY wait-for-it.sh /server
+RUN chmod +x wait-for-it.sh
 
 RUN pip install -r requirements.txt
 
-CMD python server.py
+CMD ./wait-for-it.sh dbserver:3306 && python server.py
