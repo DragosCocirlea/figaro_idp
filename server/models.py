@@ -149,7 +149,7 @@ class AppointmentModel(db.Model):
         self.date = json_appointment['date']
         self.time = json_appointment['time']
         self.barber_id = json_appointment['barber_id']
-        self.client_id = json_appointment['client_id']
+        self.client_id = json_appointment['email']
         self.service_id = json_appointment['service_id']
 
     def save_to_db(self):

@@ -31,6 +31,7 @@ api.add_resource(resources.UserData, '/user')
 api.add_resource(resources.BarbershopData, '/barbershop')
 api.add_resource(resources.BarberData, '/barber')
 api.add_resource(resources.ServiceData, '/service')
+api.add_resource(resources.TimeData, '/time')
 api.add_resource(resources.AppointmentData, '/appointment')
 
 @app.route('/inspect/barbershops')

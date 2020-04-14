@@ -57,20 +57,49 @@ class AppointmentData(Resource):
 
     def post(self):
         req_json = request.get_json()
-        # TODO: implement making an appointment
-        return {'msg' : 'S-a facut post pe appointment', 'json' : req_json}
+        barber_id = req_json['barber_id']
+        date = req_json['date']
+        time = req_json['time']
+
+        check_appointment = AppointmentModel.query.filter_by(barber_id = barber_id, date = date, time = time).first()
+        if check_appointment is not None:
+            return {'msg' : 'There already is an appointment at this barber at the specified date and time.', 'code' : 0}
+
+        new_appointment = AppointmentModel(req_json)
+        new_appointment.save_to_db()
+        return {'msg' : 'Your appointment has been created!', 'code' : 1}
     
     def delete(self):
         req_json = request.get_json()
+        user_email = req_json['email']
         appointment_id = req_json['appointment_id']
 
         appointment = AppointmentModel.query.filter_by(id = appointment_id).first()
         if appointment is None:
-            return {'msg' : 'This appointment doesn\'t exist'}
+            return {'msg' : 'This appointment doesn\'t exist', 'code' : 0}
         else:
+            # check if it is the users appointment
+            if appointment.client_id != user_email:
+                return {'msg' : 'You can only delete your own appointments', 'code' : 0}
+            
             appointment.delete_from_db()
-            return {'msg' : 'Appointment succesfully deleted'}
+            return {'msg' : 'Appointment succesfully deleted', 'code' : 1}
 
+class TimeData(Resource):
+    def get(self):
+        req_json = request.get_json()
+        barber_id = req_json['barber_id']
+        date = req_json['date']
+
+        possible_times = ['08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
+                          '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30',
+                          '16:00', '16:30', '17:00', '17:30', '18:00', '18:30', '19:00', '19:30']
+
+        appointments_that_day = AppointmentModel.query.filter_by(barber_id = barber_id, date = date).all()
+        for appointment in appointments_that_day:
+            possible_times.remove(appointment.time)
+
+        return possible_times
 
 class BarbershopData(Resource):
     def get(self):
