@@ -1,5 +1,5 @@
-docker-machine create --driver amazonec2 --amazonec2-region eu-central-1 --amazonec2-open-port 5000 --amazonec2-open-port 5001 --amazonec2-open-port 9090 --amazonec2-open-port 2377 --amazonec2-access-key AKIAJ2XDOYAJXWLYIIEA --amazonec2-secret-key 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 figaro-machine1
-docker-machine create --driver amazonec2 --amazonec2-region eu-central-1 --amazonec2-open-port 5000 --amazonec2-open-port 5001 --amazonec2-open-port 9090 --amazonec2-open-port 2377 --amazonec2-access-key AKIAJ2XDOYAJXWLYIIEA --amazonec2-secret-key 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 figaro-machine2
+docker-machine create --driver amazonec2 --amazonec2-region eu-central-1 --amazonec2-open-port 5000 --amazonec2-open-port 5001 --amazonec2-open-port 9090 --amazonec2-open-port 2377 --amazonec2-access-key KEY1 --amazonec2-secret-key KEY2 figaro-machine1
+docker-machine create --driver amazonec2 --amazonec2-region eu-central-1 --amazonec2-open-port 5000 --amazonec2-open-port 5001 --amazonec2-open-port 9090 --amazonec2-open-port 2377 --amazonec2-access-key KEY1 --amazonec2-secret-key KEY2 figaro-machine2
 
 docker-machine ssh figaro-machine1
     sudo docker swarm init -> docker swarm join ...
