@@ -2,6 +2,7 @@ from flask import Flask
 from flask_restful import Api
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
+from prometheus_flask_exporter import PrometheusMetrics
 from models import UserModel, RevokedTokenModel, db
 
 app = Flask(__name__)
@@ -16,6 +17,7 @@ app.app_context().push()
 
 api = Api(app)
 jwt = JWTManager(app)
+metrics = PrometheusMetrics(app)
 
 # create the database and the needed tables if they don't already exist
 from sqlalchemy import create_engine

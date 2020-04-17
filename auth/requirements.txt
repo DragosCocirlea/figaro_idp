@@ -4,3 +4,4 @@ flask-sqlalchemy
 mysqlclient
 passlib
 requests
+prometheus_flask_exporter

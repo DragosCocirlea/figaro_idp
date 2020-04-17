@@ -1,44 +1,55 @@
 version: "3.7"
 services:
+
   dbserver:
     image: mysql:5.7
-    container_name: dbserver
+    hostname: dbserver
     environment:
       MYSQL_ROOT_PASSWORD: root
-    # volumes:
-    #   - dbserver_data:/var/lib/mysql/
+    volumes:
+      - dbserver_volume:/var/lib/mysql/
 
   server:
-    build: ./server
-    container_name: server
+    image: shinr3x/figaro:server
+    hostname: server
     ports:
-      - "5001:5000"
+      - 5001:5000
     depends_on:
       - dbserver
+    deploy:
+      mode: replicated
+      replicas: 2
+      restart_policy:
+        condition: on-failure
 
   dbauth:
     image: mysql:5.7
-    container_name: dbauth
+    hostname: dbauth
     environment:
       MYSQL_ROOT_PASSWORD: root
-    # volumes:
-    #   - dbauth_data:/var/lib/mysql/
+    volumes:
+      - dbauth_volume:/var/lib/mysql/
     
   auth:
-    build: ./auth
-    container_name: auth
+    image: shinr3x/figaro:auth
+    hostname: auth
     ports:
-      - "5000:5000"
+      - 5000:5000
     depends_on:
       - dbauth
       - server
+    deploy:
+      mode: replicated
+      replicas: 2
+      restart_policy:
+        condition: on-failure
 
   metrics:
     image: prom/prometheus:latest
-    container_name: metrics
+    hostname: metrics
     volumes:
       - ./prometheus/:/etc/prometheus/
-      # - prometheus_volume:/prometheus
+      - prometheus_volume:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
@@ -47,7 +58,8 @@ services:
     ports:
       - 9090:9090
 
-# volumes:
-#   dbauth_data: {}
-#   dbserver_data: {}
-#   prometheus_volume: {}
+
+volumes:
+  dbauth_volume: {}
+  dbserver_volume: {}
+  prometheus_volume: {}

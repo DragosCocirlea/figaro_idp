@@ -33,6 +33,15 @@ api.add_resource(resources.BarberServiceData, '/barbers_services')
 api.add_resource(resources.TimeData, '/time')
 api.add_resource(resources.AppointmentData, '/appointment')
 
+@app.route('/')
+@app.route('/inspect/users')
+def show_users():
+    columns = ['email', 'name', 'phone', 'birthday', 'rating']
+    users = []
+    for user in UserModel.query.all():
+        users.append([user.id, user.name, user.phone, user.birthday, str(user.rating)])
+    return render_template('table.html', records=users, colnames=columns, tablename='USERS', size=len(columns))
+
 @app.route('/inspect/barbershops')
 def show_barbershops():
     columns = ['id', 'name', 'address', 'rating', 'coordX', 'coordY']
@@ -48,14 +57,6 @@ def show_barbers():
     for barber in BarberModel.query.all():
         barbers.append([barber.id, barber.name, str(barber.rating), barber.bbs_id])
     return render_template('table.html', records=barbers, colnames=columns, tablename='BARBERS', size=len(columns))
-
-@app.route('/inspect/users')
-def show_users():
-    columns = ['email', 'name', 'phone', 'birthday', 'rating']
-    users = []
-    for user in UserModel.query.all():
-        users.append([user.id, user.name, user.phone, user.birthday, str(user.rating)])
-    return render_template('table.html', records=users, colnames=columns, tablename='USERS', size=len(columns))
 
 @app.route('/inspect/services')
 def show_services():
