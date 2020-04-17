@@ -10,6 +10,7 @@ class UserModel(db.Model):
     id = db.Column('id', db.String(50), primary_key = True)
     name = db.Column('name', db.String(50))
     phone = db.Column('phone', db.String(12))
+    birthday = db.Column('birthday', db.String(11))
     rating = db.Column('rating', db.Float)
     ratings_recv = db.Column('ratings_recv', db.Integer)
 
@@ -17,6 +18,7 @@ class UserModel(db.Model):
         self.id = json_client['email']
         self.name = json_client['name']
         self.phone = json_client['phone']
+        self.birthday = json_client['birthday']
         self.rating = 0
         self.ratings_recv = 0
 
@@ -27,6 +29,7 @@ class UserModel(db.Model):
     def update_in_db(self, json_client):
         self.name = json_client['name']
         self.phone = json_client['phone']
+        self.birthday = json_client['birthday']
         db.session.commit()
 
     def delete_from_db(self):
@@ -38,6 +41,7 @@ class UserModel(db.Model):
             'id' : self.id,
             'name' : self.name,
             'phone' : self.phone,
+            'birthday' : self.birthday,
             'rating' : self.rating
         }
         return json

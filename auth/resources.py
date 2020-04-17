@@ -11,7 +11,7 @@ class UserRegistration(Resource):
         user_pass = req_json['password']
 
         if models.UserModel.find_by_email(user_email):
-          return {'msg': 'User {} already exists'. format(user_email)}
+          return {'msg': 'User {} already exists'. format(user_email)}, 401
 
         new_user = models.UserModel(
             email = user_email,
@@ -43,7 +43,7 @@ class UserLogin(Resource):
         current_user = models.UserModel.find_by_email(user_email)
         
         if not current_user:
-            return {'msg': 'User {} doesn\'t exist'.format(user_email)}
+            return {'msg': 'User {} doesn\'t exist'.format(user_email)}, 401
         
         if models.UserModel.verify_hash(user_pass, current_user.password):
             access_token = create_access_token(identity = user_email)
@@ -54,7 +54,7 @@ class UserLogin(Resource):
                 'refresh_token': refresh_token
                 }
         else:
-            return {'msg': 'Wrong credentials'}
+            return {'msg': 'Wrong credentials'}, 401
       
       
 class UserLogoutAccess(Resource):

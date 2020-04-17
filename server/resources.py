@@ -25,7 +25,7 @@ class UserData(Resource):
                 return {'msg' : 'User {} has been succesfully added to the db'.format(user_email)}, 200
             else:
                 user.update_in_db(req_json)
-                return {'msg' : 'User {} has been succesfully updated in the db'.format(user_email)}, 200
+                return user.to_json()
         except:
             return {'msg' : 'Couldn\'t add or update user in the server db'}, 500
 
@@ -51,19 +51,41 @@ class AppointmentData(Resource):
 
         appointments = AppointmentModel.query.filter_by(client_id = user_email).all()
         for appointment in appointments:
-            appointments_json.append(appointment.to_json())
+            appointment_json = {}
+            appointment_json['id'] = appointment.id
+            appointment_json['date'] = appointment.date
+            appointment_json['time'] = appointment.time
+
+            barber = BarberModel.query.filter_by(id = appointment.barber_id).first()
+            appointment_json['barber_name'] = barber.name
+
+            bbs = BarbershopModel.query.filter_by(id = barber.bbs_id).first()
+            appointment_json['bbs_name'] = bbs.name
+            appointment_json['address'] = bbs.address
+            appointment_json['lat'] = bbs.coordX
+            appointment_json['long'] = bbs.coordY
+
+            service = ServiceModel.query.filter_by(id = appointment.service_id).first()
+            appointment_json['service'] = service.name
+
+            appointments_json.append(appointment_json)
 
         return appointments_json
 
     def post(self):
         req_json = request.get_json()
         barber_id = req_json['barber_id']
+        client_id = req_json['email']
         date = req_json['date']
         time = req_json['time']
 
         check_appointment = AppointmentModel.query.filter_by(barber_id = barber_id, date = date, time = time).first()
         if check_appointment is not None:
             return {'msg' : 'There already is an appointment at this barber at the specified date and time.', 'code' : 0}
+
+        check_appointment = AppointmentModel.query.filter_by(client_id = client_id, date = date, time = time).first()
+        if check_appointment is not None:
+            return {'msg' : 'You already have an appointment at the specified date and time.', 'code' : 0}
 
         new_appointment = AppointmentModel(req_json)
         new_appointment.save_to_db()
@@ -85,65 +107,79 @@ class AppointmentData(Resource):
             appointment.delete_from_db()
             return {'msg' : 'Appointment succesfully deleted', 'code' : 1}
 
+class BarbershopData(Resource):
+    def post(self):
+        req_json = request.get_json()
+        
+        coordX = req_json['coordX']
+        coordY = req_json['coordY']
+        criteria = req_json['criteria']
+
+        if criteria == 'name':
+            search = '%{}%'.format(req_json['name'])
+            barbershops = BarbershopModel.query.filter(BarbershopModel.name.ilike(search)).all()
+        else:
+            barbershops = BarbershopModel.query.all()
+
+        barbershops_json = []
+        for barbershop in barbershops:
+            json = {}
+            json["id"] = barbershop.id
+            json["name"] = barbershop.name
+            json["rating"] = barbershop.rating
+            distance = geopy.distance.vincenty((coordX, coordY), (barbershop.coordX, barbershop.coordY)).km
+            json['distance'] = distance
+            barbershops_json.append(json)
+
+        if criteria == 'distance':
+            def distanceFunc(bbs):
+                return bbs['distance']
+            barbershops_json.sort(key=distanceFunc)
+
+        elif criteria == 'rating':
+            def ratingFunc(bbs):
+                return bbs['rating']
+            barbershops_json.sort(key=ratingFunc, reverse=True)
+
+        return barbershops_json
+
+
+class BarberServiceData(Resource):
+    def post(self):
+        barbershop_id = request.get_json()['bbs_id']
+        services_json = []
+        barbers_json = []
+
+        barbers = BarberModel.query.filter_by(bbs_id = barbershop_id).all()
+        for barber in barbers:
+            barbers_json.append(barber.to_json())
+
+        services = ServiceModel.query.filter_by(bbs_id = barbershop_id).all()
+        for service in services:
+            services_json.append(service.to_json())
+
+        return {'barbers' : barbers_json, 'services' : services_json}
+
 class TimeData(Resource):
-    def get(self):
+    def post(self):
         req_json = request.get_json()
         barber_id = req_json['barber_id']
+        client_id = req_json['email']
         date = req_json['date']
 
         possible_times = ['08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
                           '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30',
                           '16:00', '16:30', '17:00', '17:30', '18:00', '18:30', '19:00', '19:30']
 
+        # remove the timeslots for which the barber isn't free
         appointments_that_day = AppointmentModel.query.filter_by(barber_id = barber_id, date = date).all()
         for appointment in appointments_that_day:
             possible_times.remove(appointment.time)
 
+        # remove the timeslots for which the user has already made an appointment
+        appointments_that_day = AppointmentModel.query.filter_by(client_id = client_id, date = date).all()
+        for appointment in appointments_that_day:
+            if (appointment.time in possible_times):
+                possible_times.remove(appointment.time)
+
         return possible_times
-
-class BarbershopData(Resource):
-    def get(self):
-        req_json = request.get_json()
-        criteria = req_json['criteria']
-        coordX = req_json['coordX']
-        coordY = req_json['coordY']
-
-        if criteria == 'default':
-            barbershops = BarbershopModel.query.all()
-        elif criteria == 'name':
-            search = '%{}%'.format(req_json['name'])
-            barbershops = BarbershopModel.query.filter(BarbershopModel.name.ilike(search)).all()
-        elif criteria == 'rating':
-            barbershops = BarbershopModel.query.order_by(BarbershopModel.rating.desc()).all()
-        elif criteria == 'distance':
-            order_by_string = 'abs(coordX - {}) + abs(coordY - {})'.format(coordX, coordY)
-            barbershops = BarbershopModel.query.order_by(text(order_by_string)).all()
-        else:
-            return 'Bad search criteria', 400
-
-        barbershops_json = []
-        for barbershop in barbershops:
-            json = barbershop.to_json()
-            distance = geopy.distance.vincenty((coordX, coordY), (json['coordX'], json['coordY'])).km
-            json['distance'] = distance
-            barbershops_json.append(json)
-
-        return barbershops_json
-
-class BarberData(Resource):
-    def get(self):
-        barbershop_id = request.get_json()['bbs_id']
-        barbers_json = []
-        barbers = BarberModel.query.filter_by(bbs_id = barbershop_id).all()
-        for barber in barbers:
-            barbers_json.append(barber.to_json())
-        return barbers_json
-
-class ServiceData(Resource):
-    def get(self):
-        barbershop_id = request.get_json()['bbs_id']
-        services_json = []
-        services = ServiceModel.query.filter_by(bbs_id = barbershop_id).all()
-        for service in services:
-            services_json.append(service.to_json())
-        return services_json

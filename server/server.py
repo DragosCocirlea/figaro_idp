@@ -29,8 +29,7 @@ if BarbershopModel.query.count() == 0:
 import resources
 api.add_resource(resources.UserData, '/user')
 api.add_resource(resources.BarbershopData, '/barbershop')
-api.add_resource(resources.BarberData, '/barber')
-api.add_resource(resources.ServiceData, '/service')
+api.add_resource(resources.BarberServiceData, '/barbers_services')
 api.add_resource(resources.TimeData, '/time')
 api.add_resource(resources.AppointmentData, '/appointment')
 
@@ -52,10 +51,10 @@ def show_barbers():
 
 @app.route('/inspect/users')
 def show_users():
-    columns = ['email', 'name', 'phone', 'rating']
+    columns = ['email', 'name', 'phone', 'birthday', 'rating']
     users = []
     for user in UserModel.query.all():
-        users.append([user.id, user.name, user.phone, str(user.rating)])
+        users.append([user.id, user.name, user.phone, user.birthday, str(user.rating)])
     return render_template('table.html', records=users, colnames=columns, tablename='USERS', size=len(columns))
 
 @app.route('/inspect/services')
