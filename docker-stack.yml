@@ -17,8 +17,6 @@ services:
     depends_on:
       - dbserver
     deploy:
-      mode: replicated
-      replicas: 2
       restart_policy:
         condition: on-failure
 
@@ -39,8 +37,6 @@ services:
       - dbauth
       - server
     deploy:
-      mode: replicated
-      replicas: 2
       restart_policy:
         condition: on-failure
 
