@@ -5,14 +5,12 @@ services:
     container_name: dbserver
     environment:
       MYSQL_ROOT_PASSWORD: root
-    # volumes:
-    #   - dbserver_data:/var/lib/mysql/
 
   server:
-    build: ./server
+    image: shinr3x/figaro:server
     container_name: server
     ports:
-      - "5001:5000"
+      - 5001:5000
     depends_on:
       - dbserver
 
@@ -21,14 +19,13 @@ services:
     container_name: dbauth
     environment:
       MYSQL_ROOT_PASSWORD: root
-    # volumes:
-    #   - dbauth_data:/var/lib/mysql/
+
     
   auth:
-    build: ./auth
+    image: shinr3x/figaro:auth
     container_name: auth
     ports:
-      - "5000:5000"
+      - 5000:5000
     depends_on:
       - dbauth
       - server
@@ -38,7 +35,6 @@ services:
     container_name: metrics
     volumes:
       - ./prometheus/:/etc/prometheus/
-      # - prometheus_volume:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
@@ -46,8 +42,5 @@ services:
       - '--web.console.templates=/usr/share/prometheus/consoles'
     ports:
       - 9090:9090
-
-# volumes:
-#   dbauth_data: {}
-#   dbserver_data: {}
-#   prometheus_volume: {}
+    depends_on:
+      - auth
